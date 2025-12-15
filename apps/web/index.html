@@ -2,9 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Save Your Fav Songs</title>
+  <title>Save Your Fav Songs!</title>
   <link rel="stylesheet" href="css/style.css" />
 <style>
+.search-section {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.search-heading {
+  font-size: 1.6rem;
+  margin-bottom: 16px;
+}
+
   .main-title {
     text-align: center;
     font-size: 2.8rem;
@@ -47,7 +57,7 @@
 </head>
 <body>
   <header>
-    <h1>🎵 Music Pink</h1>
+    <h1>🎵 Save Your Fav Songs</h1>
     <nav>
       <a href="index.html">Home</a>
       <a href="profile.html">Profile</a>
@@ -56,14 +66,17 @@
   </header>
 
   <main>
-    <h2>Search for Music</h2>
-<div class="search-container">
-  <input
-    type="text"
-    id="searchInput"
-    placeholder="Search for an artist or song"
-  />
-  <button onclick="searchMusic()">Search</button>
+<div class="search-section">
+  <h2 class="search-heading">Search for Music</h2>
+
+  <div class="search-container">
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search for an artist or song"
+    />
+    <button onclick="searchMusic()">Search</button>
+  </div>
 </div>
 
     <ul id="results"></ul>
