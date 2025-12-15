@@ -2,8 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Music Pink App</title>
+  <title>Save Your Fav Songs</title>
   <link rel="stylesheet" href="css/style.css" />
+<style>
+  .main-title {
+    text-align: center;
+    font-size: 2.8rem;
+    margin-top: 40px;
+    margin-bottom: 30px;
+  }
+
+  .search-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .search-container input {
+    width: 320px;
+    padding: 14px;
+    font-size: 1.1rem;
+    border-radius: 6px;
+    border: none;
+  }
+
+  .search-container button {
+    padding: 14px 22px;
+    font-size: 1.1rem;
+    border-radius: 6px;
+    background-color: #ff5fa2;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+
+  .search-container button:hover {
+    background-color: #ff3d8b;
+  }
+</style>
+
+
 </head>
 <body>
   <header>
@@ -17,8 +57,14 @@
 
   <main>
     <h2>Search for Music</h2>
-    <input id="searchTerm" placeholder="Artist or song" />
-    <button onclick="searchMusic()">Search</button>
+<div class="search-container">
+  <input
+    type="text"
+    id="searchInput"
+    placeholder="Search for an artist or song"
+  />
+  <button onclick="searchMusic()">Search</button>
+</div>
 
     <ul id="results"></ul>
   </main>
