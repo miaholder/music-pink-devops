@@ -17,7 +17,6 @@ export default {
       "Access-Control-Allow-Origin": "*",
     };
 
-    // Preflight (helps if you later tighten CORS)
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -29,10 +28,10 @@ export default {
       });
     }
 
-    // Health check (add version marker so you can verify deployments)
+    // Health check
     if (url.pathname === "/api/health" && request.method === "GET") {
       return new Response(
-        JSON.stringify({ status: "ok", version: "musicbrainz-search-v1" }),
+        JSON.stringify({ status: "ok", version: "musicbrainz-artist-v1" }),
         { headers }
       );
     }
@@ -65,7 +64,7 @@ export default {
       return new Response(JSON.stringify({ username }), { headers });
     }
 
-    // Search music (MusicBrainz Search API)
+    // Search music using MusicBrainz with an ARTIST constraint
     // GET /api/search?q=...
     if (url.pathname === "/api/search" && request.method === "GET") {
       const q = (url.searchParams.get("q") || "").trim();
@@ -76,22 +75,21 @@ export default {
         });
       }
 
-      // MusicBrainz search uses Lucene-style query; simplest approach: search recordings by free text.
-      // Docs: MusicBrainz API Search + Search Server. :contentReference[oaicite:2]{index=2}
+      // Constrain the query so it finds recordings where the ARTIST matches the user input.
+      // MusicBrainz search supports fielded queries like artist:"name". 
+      const lucene = `artist:"${q.replace(/"/g, '\\"')}"`;
       const mbUrl =
         "https://musicbrainz.org/ws/2/recording?fmt=json&limit=10&query=" +
-        encodeURIComponent(q);
+        encodeURIComponent(lucene);
 
       try {
         const res = await fetch(mbUrl, {
           headers: {
-            // MusicBrainz asks for a meaningful User-Agent so they can contact maintainers if needed. :contentReference[oaicite:3]{index=3}
             "User-Agent": "music-pink-devops/1.0 (contact: miaholder)",
             "Accept": "application/json",
           },
         });
 
-        // Don’t break your app or your CD on upstream issues.
         if (!res.ok) {
           return new Response(
             JSON.stringify({
@@ -109,7 +107,7 @@ export default {
           const trackName = r?.title || "Unknown track";
           const artistName =
             (Array.isArray(r?.["artist-credit"]) && r["artist-credit"][0]?.name) ||
-            "Unknown artist";
+            q;
           const sourceUrl = r?.id
             ? `https://musicbrainz.org/recording/${r.id}`
             : undefined;
@@ -118,7 +116,7 @@ export default {
         });
 
         return new Response(JSON.stringify({ results }), { headers });
-      } catch (e) {
+      } catch {
         return new Response(
           JSON.stringify({
             results: [] as SearchResult[],
