@@ -32,6 +32,12 @@ jobs:
           workingDirectory: apps/api
           command: deploy
 
+      - name: Smoke test API endpoints
+        run: |
+          curl -f "https://api.music-pink-api.workers.dev/api/health"
+          curl -f "https://api.music-pink-api.workers.dev/api/search?q=test"
+
+
   deploy-frontend-pages:
     name: Deploy Frontend (Cloudflare Pages)
     runs-on: ubuntu-latest
