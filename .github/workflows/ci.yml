@@ -19,26 +19,80 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+          cache-dependency-path: apps/api/package-lock.json
 
       - name: Install backend dependencies
         working-directory: apps/api
-        run: npm install
+        run: npm ci
 
       - name: Run backend tests
         working-directory: apps/api
         run: npm test
 
+      - name: Build backend (if script exists)
+        working-directory: apps/api
+        run: npm run build --if-present
+
+
   frontend-check:
-    name: Frontend Validation
+    name: Frontend Validation (Static Site)
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Validate frontend files exist
+      - name: Validate required pages exist
         run: |
           test -f apps/web/index.html
           test -f apps/web/profile.html
           test -f apps/web/about.html
+
+      - name: Validate asset folders exist
+        run: |
+          test -d apps/web/css
+          test -d apps/web/js
+
+      - name: Fail if HTML references missing local files (basic)
+        run: |
+          set -e
+
+          echo "Checking index.html asset references..."
+          # Extract local src/href links (ignores http/https)
+          python3 - <<'PY'
+          import re, pathlib, sys
+
+          root = pathlib.Path("apps/web")
+          html_files = ["index.html", "profile.html", "about.html"]
+
+          missing = []
+
+          for f in html_files:
+            p = root / f
+            data = p.read_text(encoding="utf-8", errors="ignore")
+
+            # capture href/src that are local paths (no http)
+            links = re.findall(r'''(?:href|src)\s*=\s*["'](?!https?:\/\/)([^"']+)["']''', data, flags=re.I)
+            for link in links:
+              # ignore anchors, mailto, tel
+              if link.startswith("#") or link.startswith("mailto:") or link.startswith("tel:"):
+                continue
+              # strip query string
+              link = link.split("?")[0]
+              # handle root-relative like /css/style.css
+              if link.startswith("/"):
+                link = link[1:]
+              target = root / link
+              if not target.exists():
+                missing.append((f, link))
+
+          if missing:
+            print("❌ Missing referenced files:")
+            for f, link in missing:
+              print(f" - {f} references {link} but it does not exist")
+            sys.exit(1)
+          else:
+            print("✅ All referenced local files exist (basic check).")
+          PY
 
