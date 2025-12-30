@@ -13,6 +13,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apps/api/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: apps/api
+        run: npm ci
+
       - name: Deploy Worker with Wrangler
         uses: cloudflare/wrangler-action@v3
         with:
