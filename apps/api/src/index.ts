@@ -36,6 +36,42 @@ export default {
       return new Response(JSON.stringify({ username }), { headers });
     }
 
+    // Search music (public iTunes API)
+    // GET /api/search?q=...
+    if (url.pathname === "/api/search" && request.method === "GET") {
+      const q = (url.searchParams.get("q") || "").trim();
+
+      if (!q) {
+        return new Response(JSON.stringify({ results: [] }), { headers });
+      }
+
+      const itunesUrl =
+        "https://itunes.apple.com/search?media=music&limit=10&term=" +
+        encodeURIComponent(q);
+
+      const res = await fetch(itunesUrl);
+
+      if (!res.ok) {
+        return new Response(
+          JSON.stringify({ error: "Upstream search failed" }),
+          { status: 502, headers }
+        );
+      }
+
+      const data: any = await res.json();
+
+      const results = (data.results || []).map((r: any) => ({
+        trackName: r.trackName,
+        artistName: r.artistName,
+        artworkUrl100: r.artworkUrl100,
+        previewUrl: r.previewUrl,
+        trackViewUrl: r.trackViewUrl,
+      }));
+
+      return new Response(JSON.stringify({ results }), { headers });
+    }
+
+
     return new Response(JSON.stringify({ error: "Not Found" }), {
       status: 404,
       headers,
