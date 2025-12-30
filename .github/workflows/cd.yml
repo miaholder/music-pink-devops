@@ -32,11 +32,10 @@ jobs:
           workingDirectory: apps/api
           command: deploy
 
-      - name: Smoke test API endpoints
+      - name: Smoke test API contract (health + search)
         run: |
-          curl -f "https://api.music-pink-api.workers.dev/api/health"
-          curl -f "https://api.music-pink-api.workers.dev/api/search?q=test"
-
+          curl -fsS "https://api.music-pink-api.workers.dev/api/health"
+          curl -fsS "https://api.music-pink-api.workers.dev/api/search?q=test" | grep -q '"results"'
 
   deploy-frontend-pages:
     name: Deploy Frontend (Cloudflare Pages)
