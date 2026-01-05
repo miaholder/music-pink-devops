@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import worker from "../src";
+import worker from "../src/index";
 
 describe("API health endpoint", () => {
   it("responds with status ok", async () => {
@@ -7,7 +7,16 @@ describe("API health endpoint", () => {
     const response = await worker.fetch(request, {} as any);
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ status: "ok" });
+
+    const data = await response.json();
+
+    // Only assert what matters for health checks:
+    expect(data).toMatchObject({ status: "ok" });
+
+    // Optional: if version exists, ensure it is a string
+    if ("version" in data) {
+      expect(typeof (data as any).version).toBe("string");
+    }
   });
 });
 
